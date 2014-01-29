@@ -1,24 +1,23 @@
 module Main where
 
 import Data.List
+import Data.Array
+import Debug.Trace
+import Data.Set
 
-cc_list :: [Int] -> [Int]
-cc_list denominations = map (countCombinations' countCombinations denominations) [0..]
+combos :: [Int] -> Int -> Int
+combos denominations target = arr ! target
+  where
+      arr = listArray (0, target) (1: Data.List.map m [1..target])
+      m total = sum [  arr ! (total - value) | value <- denominations, value <= total]
 
-countCombinations :: [Int] -> Int -> Int
-countCombinations denominations target = (cc_list denominations) !! target
-
-countCombinations' :: ([Int] -> Int -> Int) -> [Int] -> Int -> Int
-countCombinations' _ [] _ = 0 
-countCombinations' _ _ 0 = 0
-countCombinations' cc (x:xs) target 
-    | x > target = cc xs target
-    | x == target = 1
-    | x < target = ((cc (x:xs) (target - x)) + (cc  xs target))
-
-
-main :: IO ()
+comboPatterns :: [Int] -> Int -> [[Int]]
+comboPatterns denominations target = arr ! target
+  where
+      arr = listArray (0, target) (([[]] :: [[Int]]) : Data.List.map m [1..target])
+      m total = concat [ Data.List.map ((:) value) (arr ! (total - value)) | value <- denominations, value <= total]
+      
 main = do
     denominations <- getLine
     target <- getLine
-    print $ countCombinations (read ( "[" ++ denominations ++ "]" ))  (read target) 
+    print $ Data.Set.size . fromList $ Data.List.map sort $ comboPatterns (read ( "[" ++ denominations ++ "]" ))  (read target)

@@ -1,26 +1,24 @@
--- | Main entry point to the application.
 module Main where
 
-data Tree a = EmptyTree | Node a [Tree a] deriving (Show, Read, Eq) 
-
-nullTree :: [Int] -> Int -> Tree Int
-nullTree values total = Node total [nullTree values (total+branch) | branch <- values]
-
-
-findTotal ::  Int -> Tree Int -> Int
-findTotal targetValue (Node total branches)
-    | total == targetValue = 1
-    | total > targetValue = 0
-    | total < targetValue = sum $ map (findTotal targetValue) branches
+import Data.List
+import Data.Set
     
--- | build infinite tree where each branch B2,B2...BD from each node N is weighted for each denomination D
+data Tree a = Root [Tree a] | Node a [Tree a] deriving (Show, Read, Eq) 
 
--- | calculate number of combinations by doing depth first search until sum of branch weights equals total T
+infiniteTree :: [Int] -> Tree Int
+infiniteTree values = Root [treeBranch values branchValue | branchValue <- values]
 
--- | The main entry point.
+treeBranch :: [Int] -> Int -> Tree Int
+treeBranch values branchValue = Node branchValue [treeBranch values nextBranchValue | nextBranchValue <- values]
+
+
+findTotal ::  Int -> [Int] -> Tree Int -> [[Int]]
+findTotal targetValue _ (Root branches) = concatMap (findTotal targetValue []) branches
+findTotal targetValue pattern (Node branchValue branches)
+    | branchValue + (sum pattern) == targetValue = [ sort (pattern ++ [branchValue]) ]
+    | branchValue + (sum pattern) > targetValue = []
+    | branchValue + (sum pattern) < targetValue = concatMap (findTotal targetValue (pattern++[branchValue])) branches
+
 main :: IO ()
 main = do
-    putStrLn "Welcome to FP Haskell Center!"
-    putStrLn "Have a good day!"
-    print $ findTotal 4 $ nullTree [1,2,3] 0 
-    
+    print $ size . fromList . findTotal 4 [] $ infiniteTree [1,2,3]

@@ -1,30 +1,24 @@
 module Main where
 
 import Data.List
-import Data.Set
-    
-data Tree a = Root [Tree a] | Node a [Tree a] deriving (Show, Read, Eq) 
 
-infiniteTree :: [Int] -> Tree Int
-infiniteTree values = Root [treeBranch values nextBranchValue | nextBranchValue <- values]
+cc_list :: [Int] -> [Int]
+cc_list denominations = map (countCombinations' countCombinations denominations) [0..]
 
-treeBranch :: [Int] -> Int -> Tree Int
-treeBranch values branchValue = Node branchValue [treeBranch values nextBranchValue | nextBranchValue <- values]
+countCombinations :: [Int] -> Int -> Int
+countCombinations denominations target = (cc_list denominations) !! target
 
+countCombinations' :: ([Int] -> Int -> Int) -> [Int] -> Int -> Int
+countCombinations' _ [] _ = 0 
+countCombinations' _ _ 0 = 0
+countCombinations' cc (x:xs) target 
+    | x > target = cc xs target
+    | x == target = 1
+    | x < target = ((cc (x:xs) (target - x)) + (cc  xs target))
 
-findTotal ::  Int -> [Int] -> Tree Int -> [[Int]]
-findTotal targetValue _ (Root branches) = concatMap (findTotal targetValue []) branches
-findTotal targetValue pattern (Node branchValue branches)
-    | branchValue + (sum pattern) == targetValue = [ pattern ++ [branchValue] ]
-    | branchValue + (sum pattern) > targetValue = []
-    | branchValue + (sum pattern) < targetValue = concatMap (findTotal targetValue (pattern++[branchValue])) branches
-    
-countDistinct :: [[Int]] -> Int
-countDistinct = size . fromList . Data.List.map sort
 
 main :: IO ()
 main = do
     denominations <- getLine
     target <- getLine
-    print $ countDistinct . findTotal (read target) [] $ infiniteTree $ read ( "[" ++ denominations ++ "]" )
-    
+    print $ countCombinations (read ( "[" ++ denominations ++ "]" ))  (read target) 

@@ -18,11 +18,13 @@ findTotal targetValue pattern (Node branchValue branches)
     | branchValue + (sum pattern) == targetValue = [ pattern ++ [branchValue] ]
     | branchValue + (sum pattern) > targetValue = []
     | branchValue + (sum pattern) < targetValue = concatMap (findTotal targetValue (pattern++[branchValue])) branches
-
+    
 countDistinct :: [[Int]] -> Int
 countDistinct = size . fromList . Data.List.map sort
 
 main :: IO ()
 main = do
-    print $ countDistinct . findTotal 4 [] $ infiniteTree [1,2,3]
+    denominations <- getLine
+    target <- getLine
+    print $ countDistinct . findTotal (read target) [] $ infiniteTree $ read ( "[" ++ denominations ++ "]" )
     

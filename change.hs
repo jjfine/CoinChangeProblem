@@ -9,7 +9,8 @@ combos :: [Int] -> Int -> Int
 combos denominations target = snd $ arr ! (L.length denominations, target)
   where
     arr = listArray ((0,0), ((L.length denominations), target)) [ ((denominationCount, currentTarget), totalCombos denominationCount currentTarget) | denominationCount <- [0..(L.length denominations)], currentTarget <- [0..target]]
-    totalCombos 0 _ = 1
+    totalCombos 0 0 = 1
+    totalCombos 0 _ = 0
     totalCombos _ 0 = 1
     totalCombos denominationCount currentTarget = sum [ snd (arr ! (denominationCount - 1, remaining)) | remaining <- diffList currentTarget (take denominationCount denominations)]
     
